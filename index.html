@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Journal de Suivi - Perte de Poids</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <header class="bg-green-600 text-white p-6 text-center">
+    <h1 class="text-3xl font-bold"><i class="fas fa-dumbbell"></i> Journal de Suivi - 6 Semaines</h1>
+  </header>
+
+  <main class="max-w-4xl mx-auto my-8 bg-white p-6 rounded shadow">
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="flex space-x-4" role="tablist">
+        <button class="tab-link text-green-600 font-semibold py-2 px-4 border-b-2 border-green-600" data-tab="journal">Journal</button>
+        <button class="tab-link text-gray-600 py-2 px-4" data-tab="graphiques">Graphiques</button>
+      </nav>
+    </div>
+      
+    <div id="tab-journal" class="tab-content">
+      <h2 class="text-xl font-bold mb-4"><i class="fas fa-calendar-day"></i> Suivi quotidien</h2>
+      <label class="block font-medium">Date :</label>
+      <input type="date" id="date" class="w-full border p-2 rounded mb-4">
+
+      <label class="block font-medium">Petit déjeuner :</label>
+      <textarea id="breakfast" class="w-full border p-2 rounded mb-4"></textarea>
+      <label class="block font-medium">Déjeuner :</label>
+      <textarea id="lunch" class="w-full border p-2 rounded mb-4"></textarea>
+      <label class="block font-medium">Dîner :</label>
+      <textarea id="dinner" class="w-full border p-2 rounded mb-4"></textarea>
+
+      <label class="block font-medium">Calories estimées (total) :</label>
+      <input type="number" id="calories" class="w-full border p-2 rounded mb-4">
+
+      <label class="block font-medium">Nombre de pas :</label>
+      <input type="number" id="steps" class="w-full border p-2 rounded mb-4">
+
+      <label class="block font-medium">Autre activité physique :</label>
+      <textarea id="activity" class="w-full border p-2 rounded mb-4"></textarea>
+
+      <h2 class="text-xl font-bold mt-8 mb-4"><i class="fas fa-heartbeat"></i> Ressenti</h2>
+      <label class="block font-medium">Humeur / motivation :</label>
+      <textarea id="mood" class="w-full border p-2 rounded mb-4"></textarea>
+      <label class="block font-medium">Faim ou fringales :</label>
+      <textarea id="hunger" class="w-full border p-2 rounded mb-4"></textarea>
+      <label class="block font-medium">Énergie générale :</label>
+      <textarea id="energy" class="w-full border p-2 rounded mb-4"></textarea>
+      <label class="block font-medium">Sommeil :</label>
+      <textarea id="sleep" class="w-full border p-2 rounded mb-4"></textarea>
+
+      <h2 class="text-xl font-bold mt-8 mb-4"><i class="fas fa-chart-line"></i> Bilan hebdomadaire</h2>
+      <label class="block font-medium">Poids (kg) :</label>
+      <input type="number" id="weight" step="0.1" class="w-full border p-2 rounded mb-4">
+      <label class="block font-medium">Tour de taille (cm) :</label>
+      <input type="number" id="waist" class="w-full border p-2 rounded mb-4">
+      <label class="block font-medium">Tour de hanche (cm) :</label>
+      <input type="number" id="hip" class="w-full border p-2 rounded mb-4">
+      <label class="block font-medium">Commentaires :</label>
+      <textarea id="comments" class="w-full border p-2 rounded mb-4"></textarea>
+
+      <button onclick="saveData()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+
+    <div id="tab-graphiques" class="tab-content hidden">
+      <h2 class="text-xl font-bold mb-4"><i class="fas fa-chart-bar"></i> Graphiques</h2>
+      <canvas id="stepsChart" class="mb-8"></canvas>
+      <canvas id="caloriesChart"></canvas>
+    </div>
+  </main>
+
+  <footer class="text-center text-sm text-gray-500 my-6">
+    &copy; 2025 - Suivi personnel - Motivation & Progression
+  </footer>
+
+  <script>
+    document.querySelectorAll('.tab-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('text-green-600', 'font-semibold', 'border-b-2', 'border-green-600'));
+        btn.classList.add('text-green-600', 'font-semibold', 'border-b-2', 'border-green-600');
+
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+      });
+    });
+
+    function saveData() {
+      const data = {
+        date: document.getElementById('date').value,
+        breakfast: document.getElementById('breakfast').value,
+        lunch: document.getElementById('lunch').value,
+        dinner: document.getElementById('dinner').value,
+        calories: parseInt(document.getElementById('calories').value) || 0,
+        steps: parseInt(document.getElementById('steps').value) || 0,
+        activity: document.getElementById('activity').value,
+        mood: document.getElementById('mood').value,
+        hunger: document.getElementById('hunger').value,
+        energy: document.getElementById('energy').value,
+        sleep: document.getElementById('sleep').value,
+        weight: parseFloat(document.getElementById('weight').value) || null,
+        waist: parseFloat(document.getElementById('waist').value) || null,
+        hip: parseFloat(document.getElementById('hip').value) || null,
+        comments: document.getElementById('comments').value
+      };
+
+      const date = data.date;
+      const filename = `journal-${date}.json`;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `data/${filename}`;
+      link.click();
+
+      // Update index.json in localStorage (client-side only)
+      let index = JSON.parse(localStorage.getItem('index')) || [];
+      if (!index.includes(filename)) {
+        index.push(filename);
+        localStorage.setItem('index', JSON.stringify(index));
+      }
+    }
+
+    async function loadChartsFromMultipleJSON() {
+      const stepsData = [];
+      const caloriesData = [];
+      const labels = [];
+
+      let files = [];
+      try {
+        const res = await fetch('./data/index.json');
+        if (res.ok) {
+          files = await res.json();
+        } else {
+          files = JSON.parse(localStorage.getItem('index')) || [];
+        }
+
+        for (const filename of files) {
+          const res = await fetch(`./data/${filename}`);
+          const json = await res.json();
+          if (json.date) {
+            labels.push(json.date);
+            stepsData.push(json.steps || 0);
+            caloriesData.push(json.calories || 0);
+          }
+        }
+
+        new Chart(document.getElementById('stepsChart'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Pas par jour',
+              data: stepsData,
+              borderColor: 'blue',
+              fill: false
+            }]
+          }
+        });
+
+        new Chart(document.getElementById('caloriesChart'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Calories par jour',
+              data: caloriesData,
+              borderColor: 'green',
+              fill: false
+            }]
+          }
+        });
+      } catch (err) {
+        console.error('Erreur lors du chargement des fichiers JSON :', err);
+      }
+    }
+
+    window.onload = loadChartsFromMultipleJSON;
+  </script>
+</body>
+</html>
